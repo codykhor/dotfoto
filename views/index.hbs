@@ -1,10 +1,16 @@
-<div>
-    <h2>Resize and convert images for free</h2>
+<div class="headline">
+    <p>Resize and convert images for free.</p>
 </div>
 
 {{!-- Image upload --}}
-<form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
-    <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png">
-    <input type="submit" value="Upload">
-    <p>Only JPG and PNG.</p>
-</form>
+<div class="choose-container">
+    <form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
+    <div>
+        <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png" class="choose-button">
+    </div>
+        <p>Only JPG, JPEG and PNG.</p>
+    <div class="upload-container">
+        <input type="submit" value="Upload" class="upload-button">
+    </div>
+    </form>
+</div>
