@@ -1,3 +1,9 @@
-<h1>{{title}}</h1>
-<p>Welcome to {{title}}</p>
-<p>Our little cloud project</p>
+<div>
+    <h2>Resize and convert images for free</h2>
+</div>
+
+{{!-- Image upload --}}
+<form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
+    <input type="file" id="myFile" name="filename">
+    <input type="submit" value="Upload">
+</form>
