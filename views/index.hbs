@@ -2,9 +2,16 @@
     <p>Resize and convert images for free.</p>
 </div>
 
+{{!-- Display an error message if one exists --}}
+{{#if errorMessage}}
+<div class="error-message">
+    {{errorMessage}}
+</div>
+{{/if}}
+
 {{!-- Image upload --}}
 <div class="choose-container">
-    <form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
+<form action="/upload" method="post" enctype="multipart/form-data">
     <div>
         <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png" class="choose-button">
     </div>
@@ -14,3 +21,4 @@
     </div>
     </form>
 </div>
+
