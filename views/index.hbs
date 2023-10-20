@@ -2,9 +2,16 @@
     <h2>Resize and convert images for free</h2>
 </div>
 
+{{!-- Display an error message if one exists --}}
+{{#if errorMessage}}
+<div class="error-message">
+    {{errorMessage}}
+</div>
+{{/if}}
+
 {{!-- Image upload --}}
-<form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
-    <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png">
+<form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".jpg, .jpeg, .png">
     <input type="submit" value="Upload">
-    <p>Only JPG and PNG.</p>
+    <p>Only JPG and PNG files are allowed.</p>
 </form>
