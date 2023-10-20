@@ -4,6 +4,7 @@
 
 {{!-- Image upload --}}
 <form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
-    <input type="file" id="myFile" name="filename">
+    <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png">
     <input type="submit" value="Upload">
+    <p>Only JPG and PNG.</p>
 </form>
