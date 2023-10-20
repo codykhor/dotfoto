@@ -13,7 +13,7 @@ AWS.config.update({
 
 const s3 = new AWS.S3();
 
-const bucketName = "DotFoto-image-s3";
+const bucketName = "dotfoto-image-s3";
 
 //function to create S3 bucket if not exist
 const createS3bucket = () => {
