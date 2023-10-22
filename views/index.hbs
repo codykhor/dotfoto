@@ -2,23 +2,49 @@
     <p>Resize and convert images for free.</p>
 </div>
 
-{{!-- Display an error message if one exists --}}
-{{#if errorMessage}}
-<div class="error-message">
-    {{errorMessage}}
-</div>
-{{/if}}
-
 {{!-- Image upload --}}
 <div class="choose-container">
-<form action="/upload" method="post" enctype="multipart/form-data">
-    <div>
-        <input type="file" id="myFile" name="file" accept=".jpg, .jpeg, .png" class="choose-button">
-    </div>
-        <p>Only JPG, JPEG and PNG.</p>
-    <div class="upload-container">
-        <input type="submit" value="Upload" class="upload-button">
-    </div>
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+        <div>
+            <input type="file" id="myFile" name="file" accept=".jpg, .jpeg, .png" class="choose-button">
+        </div>
+            <p>Only JPG, JPEG and PNG.</p>
+        <br>
+        <h2>Resize Settings</h2>
+        <br>
+        <div>
+            <label for="width">
+            <h3>Width:</h3>
+            </label>
+            <input type="text" id="width" name="width" placeholder="1000"><br><br>
+            <label for="height">
+            <h3>Height:</h3>
+            </label>
+            <input type="text" id="height" name="height" placeholder="1000"><br><br>
+        </div>
+        <div class="upload-container">
+                <input type="submit" value="Upload" class="upload-button">
+        </div>
     </form>
 </div>
+
+{{!-- Resize settings
+<div class="editor-container">
+
+    <form id="edit-form" method="post" action="/editor/download">
+        <label for="width">
+            <h3>Width:</h3>
+        </label>
+        <input type="text" id="width" name="width" placeholder="1000"><br><br>
+        <label for="height">
+            <h3>Height:</h3>
+        </label>
+        <input type="text" id="height" name="height" placeholder="1000"><br><br>
+        <div class="process-container">
+            <input type="submit" value="Process" class="process-button">
+        </div>
+    </form>
+</div> --}}
+
+<script src="/javascripts/upload.js"></script>
 

@@ -52,8 +52,25 @@ const generatePresignedUrl = (originalname, mimetype) => {
   }
 };
 
+// Create pre-signed GET URL to download image
+const generateGetUrl = (originalname) => {
+  const params = {
+    Bucket: bucketName,
+    Key: originalname,
+    Expires: expiryTime,
+  };
+
+  try {
+    const signedUrl = s3.getSignedUrl("getObject", params);
+    return signedUrl;
+  } catch (err) {
+    console.log(`Error generating pre-signed URL: ${err}`);
+  }
+};
+
 module.exports = {
   generatePresignedUrl,
+  generateGetUrl,
   bucketName,
   s3,
 };

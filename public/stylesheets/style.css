@@ -71,4 +71,50 @@ p {
   cursor: pointer;
 }
 
+.editor-container {
+  padding: 4rem;
+  display: grid;
+  justify-content: center;
+}
 
+.editor-container input[type=text] {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  border: 0.7px solid #1d3557;
+  padding: 0.5rem;
+}
+
+h2 {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+h3 {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.process-container {
+  text-align: center;
+  padding-top: 2rem;
+}
+
+.process-button {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 40px;
+  background-color: #31D2D5;
+  color: white;
+  padding: 13px 30px;
+  cursor: pointer;
+}
+
+.image-container {
+  padding: 4rem;
+  text-align: center;
+}
