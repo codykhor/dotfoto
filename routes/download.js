@@ -34,8 +34,7 @@ router.get("/", upload.single("image"), async function (req, res, next) {
       .resize(width, height)
       .toBuffer();
 
-    // Set the correct Content-Type header for the image format
-    // res.type("image/jpg");
+    // Load image on browser
     const resizedImageDataUri = `data:image/jpeg;base64,${resizedImage.toString(
       "base64"
     )}`;
