@@ -8,13 +8,8 @@ const { generateGetUrl, bucketName, s3 } = require("../s3/s3");
 
 router.use(logger("tiny"));
 
-// Using memoryStorage as a buffer
-const storage = multer.memoryStorage();
-
-const upload = multer({ storage: storage });
-
 /* GET image page */
-router.get("/", upload.single("image"), async function (req, res, next) {
+router.get("/", async function (req, res, next) {
   // Parse URL query string
   const filename = req.query.name;
   const width = parseInt(req.query.width, 10);
