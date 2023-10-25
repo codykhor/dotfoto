@@ -1,4 +1,5 @@
 const AWS = require("aws-sdk");
+const { PutBucketCorsCommand, S3Client } = require("@aws-sdk/client-s3");
 require("dotenv").config();
 
 AWS.config.update({
@@ -28,8 +29,38 @@ const createS3bucket = () => {
       }
     } else {
       console.log(`Created bucket: ${bucketName}`);
+      addCorsConfiguration();
     }
   });
+};
+
+// Function to add CORS configuration to the S3 bucket
+const addCorsConfiguration = async () => {
+  const client = new S3Client({ region: "ap-southeast-2" });
+
+  const corsCommand = new PutBucketCorsCommand({
+    Bucket: bucketName,
+    CORSConfiguration: {
+      CORSRules: [
+        {
+          // Allow all headers to be sent to this bucket.
+          AllowedHeaders: ["*"],
+          // Allow only GET and PUT methods to be sent to this bucket.
+          AllowedMethods: ["GET", "POST", "PUT"],
+          // Allow only requests from the specified origin(s).
+          AllowedOrigins: ["*"], // Update with your allowed origins
+          // Allow the entity tag (ETag) header to be returned in the response
+        },
+      ],
+    },
+  });
+
+  try {
+    const corsResponse = await client.send(corsCommand);
+    console.log(`CORS configuration added to the bucket: ${bucketName}`);
+  } catch (error) {
+    console.error(`Error adding CORS configuration: ${error}`);
+  }
 };
 
 // Create the S3 bucket when the application starts
