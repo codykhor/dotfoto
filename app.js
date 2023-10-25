@@ -3,12 +3,21 @@ var express = require("express");
 var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
+const cors = require("cors");
 
 var indexRouter = require("./routes/index");
 var usersRouter = require("./routes/users");
 var downloadRouter = require("./routes/download");
 
 var app = express();
+
+app.use(
+  cors({
+    origin: "*", // allow all origin
+    methods: "GET, POST",
+    allowedHeaders: "Content-Type, Authorization",
+  })
+);
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
