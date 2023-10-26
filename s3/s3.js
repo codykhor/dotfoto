@@ -37,26 +37,27 @@ createS3bucket();
 
 // Create pre-signed PUT URL to upload image
 const generatePresignedUrl = (originalname, mimetype) => {
+  const uniqueFileName = originalname + Date.now();
   const params = {
     Bucket: bucketName,
-    Key: originalname,
+    Key: uniqueFileName,
     ContentType: mimetype,
     Expires: expiryTime,
   };
 
   try {
     const signedUrl = s3.getSignedUrl("putObject", params);
-    return signedUrl;
+    return { presignedURL: signedUrl, newFileName: uniqueFileName };
   } catch (err) {
     console.log(`Error generating pre-signed URL: ${err}`);
   }
 };
 
 // Create pre-signed GET URL to download image
-const generateGetUrl = (originalname) => {
+const generateGetUrl = (filename) => {
   const params = {
     Bucket: bucketName,
-    Key: originalname,
+    Key: filename,
     Expires: expiryTime,
   };
 

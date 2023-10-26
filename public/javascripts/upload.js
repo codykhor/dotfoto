@@ -13,16 +13,16 @@ document
 
     if (response.status === 200) {
       const data = await response.json();
-      const uploadURL = data.presignedURL;
+      const upload_url = data.presignedURL;
+      const filename = data.newFileName;
 
       const fileInput = document.getElementById("myFile");
       const file = fileInput.files[0];
 
       const width = formData.get("width");
       const height = formData.get("height");
-      const filename = file.name;
 
-      const uploadResponse = await fetch(uploadURL, {
+      const uploadResponse = await fetch(upload_url, {
         method: "PUT",
         body: file,
         headers: {

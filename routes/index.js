@@ -34,15 +34,15 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 
   // Generate pre-signed URL
-  const uploadURL = generatePresignedUrl(
+  const { presignedURL, newFileName } = generatePresignedUrl(
     req.file.originalname,
     req.file.mimetype
   );
 
-  if (!uploadURL) {
+  if (!presignedURL) {
     return res.status(500).send("Error generating pre-signed URL.");
   } else {
-    return res.status(200).json({ presignedURL: uploadURL });
+    return res.status(200).json({ presignedURL, newFileName });
   }
 });
 
