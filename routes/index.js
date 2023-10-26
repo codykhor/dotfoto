@@ -40,7 +40,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   );
 
   if (!presignedURL) {
-    return res.status(500).send("Error generating pre-signed URL.");
+    return res.status(500).render("error", { err });
   } else {
     return res.status(200).json({ presignedURL, newFileName });
   }

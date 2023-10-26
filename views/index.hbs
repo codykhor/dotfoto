@@ -17,14 +17,15 @@
             <label for="width">
             <h3>Width:</h3>
             </label>
-            <input type="number" id="width" name="width" placeholder="1000" min="1" max="1920"><br>
+            <input type="number" id="width" name="width" value="1000" min="1" max="20000"><br>
             <label for="height">
             <h3>Height:</h3>
             </label>
-            <input type="number" id="height" name="height" placeholder="1000" min="1" max="1080"><br><br>
+            <input type="number" id="height" name="height" value="1000" min="1" max="20000"><br><br>
         </div>
         <div class="upload-container">
-                <input type="submit" value="Process" class="upload-button">
+                {{!-- <input type="submit" value="Process" class="process-button" id="process-button" disabled> --}}
+                <button type="submit" value="Process" class="process-button" id="process-button" disabled>Process</button>
         </div>
     </form>
 </div>

@@ -1,3 +1,8 @@
+document.getElementById("myFile").addEventListener("change", function () {
+  validateFile();
+  validateFileSize(this);
+});
+
 document
   .getElementById("upload-form")
   .addEventListener("submit", async function (event) {
@@ -40,3 +45,25 @@ document
       console.log("Error generating pre-signed URL.");
     }
   });
+
+function validateFileSize(fileInput) {
+  const maxFileSize = 30 * 1024 * 1024; // 30MB
+
+  if (fileInput.files[0].size > maxFileSize) {
+    alert("File must be less than 30MB.");
+    fileInput.value = "";
+    return false;
+  }
+  return true;
+}
+
+function validateFile() {
+  const fileInput = document.getElementById("myFile");
+  const processButton = document.getElementById("process-button");
+
+  if (fileInput.files.length > 0) {
+    processButton.removeAttribute("disabled");
+  } else {
+    processButton.setAttribute("disabled", "true");
+  }
+}

@@ -1,10 +1,9 @@
 const axios = require("axios");
 var express = require("express");
 const logger = require("morgan");
-const sharp = require("sharp");
 var router = express.Router();
-const multer = require("multer");
-const { generateGetUrl, bucketName, s3 } = require("../s3/s3");
+const { bucketName, s3 } = require("../s3/s3");
+const { processImage } = require("../sharp/imageProcess");
 
 router.use(logger("tiny"));
 
@@ -16,29 +15,35 @@ router.get("/", async function (req, res, next) {
   const height = parseInt(req.query.height, 10);
 
   try {
-    // Generate a pre-signed URL to get the image from S3
-    const downloadURL = generateGetUrl(filename);
+    // Get image from S3 bucket
+    const objectKey = filename;
+    const getObjectParams = {
+      Bucket: bucketName,
+      Key: objectKey,
+    };
 
-    const response = await axios.get(downloadURL, {
-      responseType: "arraybuffer",
+    s3.getObject(getObjectParams, async (err, data) => {
+      if (err) {
+        console.error("Error fetching the image from S3:", err);
+        res.status(500).render("error", { err });
+      } else {
+        const imageBuffer = data.Body;
+
+        // Process image
+        const resizedImage = await processImage(imageBuffer, width, height);
+
+        // Load image on browser
+        const resizedImageDataUri = `data:image/jpeg;base64,${resizedImage.toString(
+          "base64"
+        )}`;
+
+        // Send the resized image data as the response
+        res.render("download", { resizedImageDataUri });
+      }
     });
-    const imageBuffer = response.data;
-
-    // Image processing logic
-    const resizedImage = await sharp(imageBuffer)
-      .resize(width, height)
-      .toBuffer();
-
-    // Load image on browser
-    const resizedImageDataUri = `data:image/jpeg;base64,${resizedImage.toString(
-      "base64"
-    )}`;
-
-    // Send the resized image data as the response
-    res.render("download", { resizedImageDataUri });
   } catch (err) {
     console.error("Error fetching the image from S3:", err);
-    res.status(500).send("Internal Server Error");
+    res.status(500).render("error", { err });
   }
 });
 

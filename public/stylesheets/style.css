@@ -96,7 +96,18 @@ h3 {
   text-align: center;
 }
 
-.upload-button {
+.process-button:disabled {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 40px;
+  background-color: grey;
+  color: white;
+  padding: 13px 30px;
+  cursor: not-allowed;
+}
+
+.process-button {
   font-family: 'Poppins', sans-serif;
   font-size: 1.2rem;
   border: none;
@@ -107,7 +118,7 @@ h3 {
   cursor: pointer;
 }
 
-.upload-button:hover {
+.process-button:hover {
   background-color: #023047;
 }
 
@@ -133,4 +144,14 @@ h3 {
 
 .download-button:hover {
   background-color: #023047;
+}
+
+.error {
+  padding: 10rem 0 3rem 0;
+}
+
+.error p {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 300;
 }
