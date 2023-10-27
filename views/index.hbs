@@ -11,7 +11,9 @@
         </div>
             <p>Only JPG, JPEG and PNG.</p>
         <br>
-        <h2>Custom resize</h2>
+
+        {{!-- Resize Settings --}}
+        <h2>Customisation</h2>
         <br>
         <div class="editor-container">
             <label for="width">
@@ -21,12 +23,19 @@
             <label for="height">
             <h3>Height:</h3>
             </label>
-            <input type="number" id="height" name="height" value="1000" min="1" max="20000"><br><br>
+            <input type="number" id="height" name="height" value="1000" min="1" max="20000"><br>
+            {{!-- Compress settings --}}
+            <h3>Quality(%):</h3>
+            </label>
+            <input type="number" id="quality" name="quality" value="40" min="5" max="100"><br><br>
         </div>
+        
         <div class="upload-container">
                 {{!-- <input type="submit" value="Process" class="process-button" id="process-button" disabled> --}}
                 <button type="submit" value="Process" class="process-button" id="process-button" disabled>Process</button>
         </div>
+
+        
     </form>
 </div>
 

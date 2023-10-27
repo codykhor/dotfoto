@@ -3,7 +3,12 @@ const logger = require("morgan");
 var router = express.Router();
 const AWS = require("aws-sdk");
 const multer = require("multer");
-const { generatePresignedUrl, bucketName, s3 } = require("../s3/s3");
+const {
+  generatePresignedUrl,
+  generateGetUrl,
+  bucketName,
+  s3,
+} = require("../s3/s3");
 
 router.use(logger("tiny"));
 
@@ -33,7 +38,7 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     return res.status(400).send("No file uploaded.");
   }
 
-  // Generate pre-signed URL
+  // Generate pre-signed URL for upload
   const { presignedURL, newFileName } = generatePresignedUrl(
     req.file.originalname,
     req.file.mimetype
@@ -45,5 +50,20 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     return res.status(200).json({ presignedURL, newFileName });
   }
 });
+
+// Handle the download process
+// router.post("/transfer", async (req, res) => {
+//   const filename = req.body.filename;
+
+//   // Generate pre-signed URL for download
+//   const downloadURL = generateGetUrl(filename);
+//   console.log(filename, downloadURL);
+
+//   if (!downloadURL) {
+//     return res.status(500).render("error", { err });
+//   } else {
+//     return res.status(200).json({ downloadURL });
+//   }
+// });
 
 module.exports = router;
