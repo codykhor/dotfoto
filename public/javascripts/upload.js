@@ -26,7 +26,7 @@ document
 
       const width = formData.get("width");
       const height = formData.get("height");
-      const quality = formData.get("quality");
+      const density = formData.get("density");
 
       const uploadResponse = await fetch(upload_url, {
         method: "PUT",
@@ -38,7 +38,7 @@ document
 
       if (uploadResponse.status === 200) {
         console.log("File uploaded successfully!");
-        window.location.href = `/download?name=${filename}&width=${width}&height=${height}&quality=${quality}`;
+        window.location.href = `/download?name=${filename}&width=${width}&height=${height}&density=${density}`;
       } else {
         console.log("Error uploading file.");
       }

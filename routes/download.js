@@ -14,7 +14,7 @@ router.get("/", async function (req, res, next) {
   const filename = req.query.name;
   const width = parseInt(req.query.width, 10);
   const height = parseInt(req.query.height, 10);
-  const quality = parseInt(req.query.quality, 10);
+  const density = parseInt(req.query.density, 10);
 
   try {
     // Get image from S3 bucket
@@ -30,13 +30,15 @@ router.get("/", async function (req, res, next) {
         res.status(500).render("error", { err });
       } else {
         const imageBuffer = data.Body;
+        const outputPath = "/tmp/processed-image.jpg";
 
         // Process image
         const resizedImage = await processImage(
           imageBuffer,
+          outputPath,
           width,
           height,
-          quality
+          density
         );
 
         // Load image on browser
