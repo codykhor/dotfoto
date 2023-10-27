@@ -30,12 +30,10 @@ router.get("/", async function (req, res, next) {
         res.status(500).render("error", { err });
       } else {
         const imageBuffer = data.Body;
-        const outputPath = "/tmp/processed-image.jpg";
 
         // Process image
         const resizedImage = await processImage(
           imageBuffer,
-          outputPath,
           width,
           height,
           density
