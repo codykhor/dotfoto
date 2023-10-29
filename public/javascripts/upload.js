@@ -24,10 +24,6 @@ document
       const fileInput = document.getElementById("myFile");
       const file = fileInput.files[0];
 
-      const width = formData.get("width");
-      const height = formData.get("height");
-      const density = formData.get("density");
-
       const uploadResponse = await fetch(upload_url, {
         method: "PUT",
         body: file,
@@ -38,7 +34,7 @@ document
 
       if (uploadResponse.status === 200) {
         console.log("File uploaded successfully!");
-        window.location.href = `/download?name=${filename}&width=${width}&height=${height}&density=${density}`;
+        window.location.href = `/download?name=${filename}`;
       } else {
         console.log("Error uploading file.");
       }

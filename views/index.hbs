@@ -1,37 +1,18 @@
 <div class="headline">
-    <h1>Image Resizer</h1>
-    <p>Instantly resize your images for free with ease</p>
+    <h1>Video Converter</h1>
+    <p>Convert your videos to MP4 with ease</p>
 </div>
 
-{{!-- Image upload --}}
+{{!-- Video upload --}}
 <div class="choose-container">
     <form id="upload-form" method="post" enctype="multipart/form-data">
         <div>
-            <input type="file" id="myFile" name="file" accept=".jpg, .jpeg, .png" class="choose-button">
+            <input type="file" id="myFile" name="file" accept=".avi, .mkv, .flv, .wmv, .webm, .mpeg, .3gp, .mov" class="choose-button">
         </div>
-            <p>Only JPG, JPEG and PNG.</p>
+            {{!-- <p>Only JPG, JPEG and PNG.</p> --}}
         <br>
-
-        {{!-- Resize Settings --}}
-        <h2>Customisation</h2>
-        <br>
-        <div class="editor-container">
-            <label for="width">
-            <h3>Width:</h3>
-            </label>
-            <input type="number" id="width" name="width" value="1000" min="1" max="20000"><br>
-            <label for="height">
-            <h3>Height:</h3>
-            </label>
-            <input type="number" id="height" name="height" value="1000" min="1" max="20000"><br>
-            {{!-- Compress settings --}}
-            <h3>Density(DPI):</h3>
-            </label>
-            <input type="number" id="density" name="density" value="40" min="5" max="100"><br><br>
-        </div>
         
         <div class="upload-container">
-                {{!-- <input type="submit" value="Process" class="process-button" id="process-button" disabled> --}}
                 <button type="submit" value="Process" class="process-button" id="process-button" disabled>Process</button>
         </div>
 

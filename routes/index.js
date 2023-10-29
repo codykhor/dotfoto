@@ -15,8 +15,17 @@ router.use(logger("tiny"));
 // Using memoryStorage as a buffer
 const storage = multer.memoryStorage();
 
-// Restrict the file types to JPEG, JPG and PNG
-const allowedMimeTypes = ["image/jpeg", "image/jpg", "image/png"];
+// Restrict the file types
+const allowedMimeTypes = [
+  "video/avi",
+  "video/x-matroska", // MKV
+  "video/x-flv",
+  "video/x-ms-wmv",
+  "video/webm",
+  "video/mpeg",
+  "video/3gpp",
+  "video/quicktime",
+];
 const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -29,7 +38,7 @@ const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 /* GET home page. */
 router.get("/", function (req, res, next) {
-  res.render("index", { title: "DotFoto" });
+  res.render("index", { title: "DotMedia" });
 });
 
 // Handle the upload

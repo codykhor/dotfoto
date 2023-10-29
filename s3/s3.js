@@ -37,7 +37,7 @@ createS3bucket();
 
 // Create pre-signed PUT URL to upload image
 const generatePresignedUrl = (originalname, mimetype) => {
-  const uniqueFileName = originalname + Date.now();
+  const uniqueFileName = Date.now() + originalname;
   const params = {
     Bucket: bucketName,
     Key: uniqueFileName,
