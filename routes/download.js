@@ -90,7 +90,6 @@ async function uploadFileToS3(s3, videoName, res) {
 // Handle the download process
 router.post("/transfer", async (req, res) => {
   const filename = req.body.filename;
-  console.log("filename: ", filename);
 
   // Generate pre-signed URL for download
   const downloadURL = generateGetUrl(filename);

@@ -60,8 +60,10 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     let messageBody = {
       videoID: newFileName,
     };
+
     // Convert the message body to a string
     let messageBodyString = JSON.stringify(messageBody);
+
     // Send the message to the SQS queue
     sendSQSMessage(messageBodyString);
     return res.status(200).json({ presignedURL, newFileName });
