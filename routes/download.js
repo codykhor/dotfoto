@@ -10,7 +10,7 @@ const {
   bucketName,
   s3,
   generatePresignedUrl,
-} = require("../s3/s3");
+} = require("../aws/s3");
 router.use(logger("tiny"));
 
 /* GET video page */
