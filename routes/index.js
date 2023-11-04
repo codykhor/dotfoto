@@ -8,7 +8,8 @@ const {
   generateGetUrl,
   bucketName,
   s3,
-} = require("../s3/s3");
+} = require("../aws/s3");
+const { sendSQSMessage, receiveSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
 
@@ -56,6 +57,13 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   if (!presignedURL) {
     return res.status(500).render("error", { err });
   } else {
+    let messageBody = {
+      videoID: newFileName,
+    };
+    // Convert the message body to a string
+    let messageBodyString = JSON.stringify(messageBody);
+    // Send the message to the SQS queue
+    sendSQSMessage(messageBodyString);
     return res.status(200).json({ presignedURL, newFileName });
   }
 });
