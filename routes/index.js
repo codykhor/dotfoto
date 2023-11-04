@@ -9,6 +9,7 @@ const {
   bucketName,
   s3,
 } = require("../s3/s3");
+const { sendSQSMessage, receiveSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
 
@@ -56,6 +57,17 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   if (!presignedURL) {
     return res.status(500).render("error", { err });
   } else {
+    let sendParams = {
+      QueueUrl:
+        "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+      MessageBody: JSON.stringify({
+        videoID: newFileName,
+        presignedURL: presignedURL,
+      }),
+    };
+
+    // Send the message to the SQS queue
+    sendSQSMessage(sendParams);
     return res.status(200).json({ presignedURL, newFileName });
   }
 });
