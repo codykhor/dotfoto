@@ -29,18 +29,13 @@ router.get("/", async function (req, res, next) {
     .output(outputPath)
     .outputFormat("mp4")
     .on("start", function (commandLine) {
-      console.log("Starting conversion...");
       console.log("FFmpeg command: " + commandLine);
     })
     .on("progress", function (progress) {
-      console.log("Progress event triggered");
       console.log("Processing: " + progress.percent + "% done");
-      res.write("Processing: " + progress.percent + "% done\n");
     })
     .on("end", function () {
       // Upload processed video to S3
-      // uploadFileToS3(s3, filename, pass, res);
-
       const params = {
         Bucket: bucketName,
         Key: outputPath,
@@ -53,78 +48,35 @@ router.get("/", async function (req, res, next) {
           res.status(500).render("error", { err });
         } else {
           console.log("Converted video upload successful!");
+          fs.unlink(outputPath, (err) => {
+            if (err) {
+              console.error("Error removing local file:", err);
+            } else {
+              console.log("Local file removed successfully");
+
+              // Generate pre-signed URL for download
+              // const downloadConvertedURL = generateGetUrl(outputPath);
+              // console.log(downloadConvertedURL);
+
+              // if (!downloadConvertedURL) {
+              //   console.log("error", { err });
+              //   res.status(500).render("error", { err });
+              // } else {
+              //   console.log("Link to download file is ready");
+              //}
+            }
+          });
+          res.render("download", { outputPath });
         }
       });
-
-      res.write("success");
-      res.end();
     })
     .on("error", function (err) {
       console.error("Error converting video:", err.message);
       console.error("ffmpeg stderr:", err.stderr);
       res.status(500).render("error", { err });
-      console.error("Conversion failed at an earlier stage.");
     });
-  // .pipe(uploadFileToS3(s3, filename, res));
 
   ffmpegProcess.run();
-
-  // fs.unlinkSync(outputPath);
-
-  // .pipe(putObjectS3(s3, filename));
-
-  // try {
-  //   // Get video from S3 bucket
-  //   const objectKey = filename;
-  //   const getObjectParams = {
-  //     Bucket: bucketName,
-  //     Key: objectKey,
-  //   };
-
-  //   s3.getObject(getObjectParams, async (err, data) => {
-  //     if (err) {
-  //       console.error("Error fetching the image from S3:", err);
-  //       res.status(500).render("error", { err });
-  //     } else {
-
-  //       const videoBuffer = data.Body;
-
-  //       const readableStream = new stream.PassThrough();
-  //       readableStream.end(videoBuffer);
-
-  //       // Get video metadata
-  //       ffmpeg.ffprobe(readableStream, (err, metadata) => {
-  //         if (err) {
-  //           console.error("Error probing video format:", err);
-  //           res.status(500).render("error", { err });
-  //         } else {
-  //           const inputFormats = metadata.format.format_name.split(","); // Split the formats
-  //           const inputFormat = inputFormats[0].trim(); // Get the first format
-
-  //           console.log(inputFormat);
-
-  //           // const convertedVideo = `${filename}.mp4`;
-
-  //           ffmpeg()
-  //             .input(videoBuffer)
-  //             .inputFormat(inputFormat)
-  //             .outputFormat("mp4")
-  //             .on("end", function () {
-  //               // Upload processed video to S3
-  //             })
-  //             .on("error", function (err) {
-  //               console.error("Error converting video:", err);
-  //               res.status(500).render("error", { err });
-  //             })
-  //             .pipe(putObjectS3(s3, filename));
-  //         }
-  //       });
-  //     }
-  //   });
-  // } catch (err) {
-  //   console.error("Error fetching the video from S3:", err);
-  //   res.status(500).render("error", { err });
-  // }
 });
 
 async function uploadFileToS3(s3, videoName, res) {
@@ -146,27 +98,10 @@ async function uploadFileToS3(s3, videoName, res) {
   });
 }
 
-// const putObjectS3 = function (s3, filename) {
-//   const pass = new stream.PassThrough();
-//   const putObjectParams = {
-//     Bucket: bucketName,
-//     Key: filename,
-//     Body: pass,
-//     ContentType: "video/mp4",
-//   };
-
-//   s3.putObject(putObjectParams, (err, data) => {
-//     if (err) {
-//       console.error("Error uploading the video to S3:", err);
-//     } else {
-//       console.log("Converted video upload successful!");
-//     }
-//   });
-// };
-
 // Handle the download process
 router.post("/transfer", async (req, res) => {
   const filename = req.body.filename;
+  console.log("filename: ", filename);
 
   // Generate pre-signed URL for download
   const downloadURL = generateGetUrl(filename);

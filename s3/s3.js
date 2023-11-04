@@ -35,7 +35,7 @@ const createS3bucket = () => {
 // Create the S3 bucket when the application starts
 createS3bucket();
 
-// Create pre-signed PUT URL to upload image
+// Create pre-signed PUT URL to upload video
 const generatePresignedUrl = (originalname, mimetype) => {
   const uniqueFileName = Date.now() + originalname;
   const params = {
@@ -53,7 +53,7 @@ const generatePresignedUrl = (originalname, mimetype) => {
   }
 };
 
-// Create pre-signed GET URL to download image
+// Create pre-signed GET URL to download video
 const generateGetUrl = (filename) => {
   const params = {
     Bucket: bucketName,

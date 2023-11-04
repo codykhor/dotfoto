@@ -60,19 +60,4 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// Handle the download process
-// router.post("/transfer", async (req, res) => {
-//   const filename = req.body.filename;
-
-//   // Generate pre-signed URL for download
-//   const downloadURL = generateGetUrl(filename);
-//   console.log(filename, downloadURL);
-
-//   if (!downloadURL) {
-//     return res.status(500).render("error", { err });
-//   } else {
-//     return res.status(200).json({ downloadURL });
-//   }
-// });
-
 module.exports = router;
