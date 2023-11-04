@@ -53,17 +53,6 @@ router.get("/", async function (req, res, next) {
               console.error("Error removing local file:", err);
             } else {
               console.log("Local file removed successfully");
-
-              // Generate pre-signed URL for download
-              // const downloadConvertedURL = generateGetUrl(outputPath);
-              // console.log(downloadConvertedURL);
-
-              // if (!downloadConvertedURL) {
-              //   console.log("error", { err });
-              //   res.status(500).render("error", { err });
-              // } else {
-              //   console.log("Link to download file is ready");
-              //}
             }
           });
           res.render("download", { outputPath });
