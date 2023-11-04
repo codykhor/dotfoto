@@ -53,6 +53,7 @@ router.get("/", async function (req, res, next) {
               console.error("Error removing local file:", err);
             } else {
               console.log("Local file removed successfully");
+              console.log("oh gosh");
             }
           });
           res.render("download", { outputPath });

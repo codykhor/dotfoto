@@ -56,6 +56,7 @@ function processVideo(videoID, receiptHandle) {
         s3.upload(params, function (s3Err, data) {
           if (s3Err) throw s3Err;
           console.log(`File uploaded successfully at ${data.Location}`);
+          console.log("im here!");
 
           // Delete the message from the SQS queue
           const deleteParams = {
