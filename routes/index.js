@@ -57,16 +57,28 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   if (!presignedURL) {
     return res.status(500).render("error", { err });
   } else {
+    return res.status(200).json({ presignedURL, newFileName });
+  }
+});
+
+router.post("/send-sqs-message", async (req, res) => {
+  try {
     let messageBody = {
-      videoID: newFileName,
+      videoID: req.body.filename,
     };
 
     // Convert the message body to a string
     let messageBodyString = JSON.stringify(messageBody);
 
     // Send the message to the SQS queue
-    sendSQSMessage(messageBodyString);
-    return res.status(200).json({ presignedURL, newFileName });
+    await sendSQSMessage(messageBodyString);
+
+    return res.status(200).send("SQS message sent successfully!");
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .send("An error occurred while sending the SQS message.");
   }
 });
 
