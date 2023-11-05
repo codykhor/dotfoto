@@ -20,10 +20,17 @@ document
       const downloadURL = data.downloadURL;
       console.log(downloadURL);
 
-      // Download process for converted video
-      const downloadLink = document.getElementById("download-link");
-      downloadLink.href = downloadURL;
-      downloadLink.click();
+      // Start polling for file availability
+      const pollInterval = setInterval(async () => {
+        const checkResponse = await fetch(`/check-file?name=${filename}`);
+        if (checkResponse.status === 200) {
+          clearInterval(pollInterval);
+          // Download process for converted video
+          const downloadLink = document.getElementById("download-link");
+          downloadLink.href = downloadURL;
+          downloadLink.click();
+        }
+      }, 5000); // Poll every 5 seconds
     } else {
       // Handle error
       console.error("Download failed");

@@ -1,14 +1,14 @@
-<div class="headline">
-    <p>Video ready for download!</p>
-</div>
-
-<div class="download-container">
+<div class="download-container" style="display: none;">
     <form method="post" id="download-form">
         <input type="hidden" name="filename" value={{outputPath}}>
         <a id="download-link" href="#" download>
             <input type="submit" value="Download" class="download-button">
         </a>
     </form>
+</div>
+
+<div class="processing-message">
+    <p>Video is processing...</p>
 </div>
 
 <script src="/javascripts/download.js"></script>
