@@ -1,0 +1,29 @@
+
+    <p>Loading... Please wait.</p>
+    <script>
+        // Define a function to check for outputPath
+        function checkForOutputPath() {
+            fetch('/download') // Create an endpoint for checking outputPath
+                .then(function (response) {
+                    return response.json();
+                })
+                .then(function (data) {
+                    if (data.outputPath) {
+                        // If outputPath is available, redirect to the "download" page
+                        window.location.href = `/download?outputPath=${data.outputPath}`;
+                    } else {
+                        // If outputPath is not available, continue checking after a delay
+                        setTimeout(checkForOutputPath, 5000); // Adjust the delay as needed
+                    }
+                })
+                .catch(function (error) {
+                    console.error('Error while checking for outputPath:', error);
+                });
+        }
+
+        // Start checking for outputPath
+        checkForOutputPath();
+    </script>
+
+
+</html>
