@@ -37,6 +37,25 @@ function processVideo(videoID, receiptHandle) {
     .on("start", function (commandLine) {
       console.log("Starting conversion...");
       console.log("FFmpeg command: " + commandLine);
+      const visibilityTimeout = 60; // Extend the visibility timeout
+
+      sqs.changeMessageVisibility(
+        {
+          QueueUrl:
+            "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+          ReceiptHandle: receiptHandle,
+          VisibilityTimeout: visibilityTimeout,
+        },
+        function (err, data) {
+          if (err) {
+            console.log("Error changing message visibility", err);
+          } else {
+            console.log(
+              `Message visibility extended to ${visibilityTimeout} seconds`
+            );
+          }
+        }
+      );
     })
     .on("progress", function (progress) {
       console.log("Processing: " + progress.percent + "% done");
@@ -60,7 +79,8 @@ function processVideo(videoID, receiptHandle) {
 
           // Delete the message from the SQS queue
           const deleteParams = {
-            QueueUrl: process.env.AWS_SQS_URL,
+            QueueUrl:
+              "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
             ReceiptHandle: receiptHandle,
           };
 
