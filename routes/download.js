@@ -18,10 +18,9 @@ router.use(logger("tiny"));
 router.get("/", async function (req, res, next) {
   // Parse URL query string
   const filename = req.query.name;
-  // Generate pre-signed URL for download
-  const downloadURL = generateGetUrl(filename);
-  console.log(downloadURL);
-  const outputPath = `${filename}.mp4`;
+  const outputFileName = filename.split(".").slice(0, -1).join(".");
+  console.log(outputFileName);
+  const outputPath = `${outputFileName}.mp4`;
   console.log(outputPath);
   res.render("download", { outputPath });
 });
@@ -93,14 +92,35 @@ router.get("/", async function (req, res, next) {
 // Handle the download process
 router.post("/transfer", async (req, res) => {
   const filename = req.body.filename;
+  const outputFileName = filename.split(".").slice(0, -1).join(".") + ".mp4";
 
   // Generate pre-signed URL for download
-  const downloadURL = generateGetUrl(filename);
+  const downloadURL = generateGetUrl(outputFileName);
 
   if (!downloadURL) {
     return res.status(500).render("error", { err });
   } else {
     return res.status(200).json({ downloadURL });
+  }
+});
+router.get("/check-file", async (req, res) => {
+  const filename = req.query.name;
+  const params = {
+    Bucket: bucketName,
+    Key: filename,
+  };
+
+  console.log("Checking file:", filename);
+  console.log("Bucket name:", bucketName);
+
+  try {
+    await s3.headObject(params).promise();
+    console.log("File Found in S3");
+    res.status(200).send();
+  } catch (err) {
+    console.error("File not Found ERROR:", err);
+    console.error("Error code:", err.code);
+    res.status(404).send();
   }
 });
 
