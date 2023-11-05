@@ -121,7 +121,8 @@ function processVideo(videoID, receiptHandle) {
 
               // Delete the message from the SQS queue
               const deleteParams = {
-                QueueUrl: process.env.AWS_SQS_URL,
+                QueueUrl:
+                  "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
                 ReceiptHandle: receiptHandle,
               };
 
