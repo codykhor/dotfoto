@@ -15,13 +15,16 @@ router.use(logger("tiny"));
 
 /* GET video page */
 // video processing page
-// router.get("/", async function (req, res, next) {
-//   // Parse URL query string
-//   const filename = req.query.name;
-
-//   // Generate pre-signed URL for download
-//   const downloadURL = generateGetUrl(filename);
-//   const outputPath = `${filename}.mp4`;
+router.get("/", async function (req, res, next) {
+  // Parse URL query string
+  const filename = req.query.name;
+  // Generate pre-signed URL for download
+  const downloadURL = generateGetUrl(filename);
+  console.log(downloadURL);
+  const outputPath = `${filename}.mp4`;
+  console.log(outputPath);
+  res.render("download", { outputPath });
+});
 
 //   const ffmpegProcess = ffmpeg()
 //     .input(downloadURL) // Provide the presigned URL as the input

@@ -69,6 +69,14 @@ function processVideo(videoID, receiptHandle) {
               console.log("Delete Error", err);
             } else {
               console.log("Message Deleted", data);
+              pollForMessages();
+              fs.unlink(outputPath, (err) => {
+                if (err) {
+                  console.error("Error removing local file:", err);
+                } else {
+                  console.log("Local file removed successfully");
+                }
+              });
             }
           });
         });
