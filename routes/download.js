@@ -49,38 +49,6 @@ router.get("/", async function (req, res, next) {
   }
 });
 
-// function pollForMessages() {
-//   return new Promise(async (resolve, reject) => {
-//     sqs.receiveMessage(receiveParams, async (err, data) => {
-//       if (err) {
-//         console.log("Receive Error", err);
-//         // Retry after 5 secs
-//         setTimeout(pollForMessages, 5000);
-//       } else if (data.Messages) {
-//         try {
-//           console.log(data.Messages[0].Body);
-//           const message = JSON.parse(data.Messages[0].Body);
-//           processVideo(message.videoID, data.Messages[0].ReceiptHandle); // Pass the ReceiptHandle to processVideo
-//         } catch (err) {
-//           console.log(err);
-//           reject(err);
-//         }
-//       } else {
-//         // Only poll for new messages if there are no messages currently being processed
-//         setTimeout(async () => {
-//           try {
-//             const outputPath = await pollForMessages();
-//             resolve(outputPath);
-//           } catch (error) {
-//             reject(error);
-//           }
-//         }, 5000);
-//         // pollForMessages();
-//       }
-//     });
-//   });
-// }
-
 async function pollForMessages() {
   try {
     const data = await receiveMessage();
