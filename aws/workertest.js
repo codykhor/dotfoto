@@ -14,7 +14,7 @@ AWS.config.update({
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 const receiveParams = {
-  QueueUrl: process.env.AWS_SQS_URL,
+  QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
   MaxNumberOfMessages: 10,
   VisibilityTimeout: 60,
   WaitTimeSeconds: 20, // Enable long polling
