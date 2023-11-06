@@ -1,3 +1,4 @@
+require("dotenv").config();
 const axios = require("axios");
 var express = require("express");
 const AWS = require("aws-sdk");
@@ -6,177 +7,61 @@ var router = express.Router();
 // const stream = require("stream");
 const fs = require("fs");
 const ffmpeg = require("fluent-ffmpeg");
+const { resolve } = require("path");
 const {
   generateGetUrl,
   bucketName,
   s3,
   generatePresignedUrl,
 } = require("../aws/s3");
-const { resolve } = require("path");
-require("dotenv").config();
+
 router.use(logger("tiny"));
-
-AWS.config.update({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  sessionToken: process.env.AWS_SESSION_TOKEN,
-  region: "ap-southeast-2",
-});
-
-const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
-
-const receiveParams = {
-  QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
-  MaxNumberOfMessages: 10,
-  VisibilityTimeout: 60,
-  WaitTimeSeconds: 20, // Enable long polling
-};
 
 /* GET video page */
 // video processing page
 router.get("/", async function (req, res, next) {
   try {
-    const outputPath = await pollForMessages();
+    console.log(req.query);
+    // Wait for the SQS job to complete
+    console.log("🟢 Waiting for message from queue...");
+    // * get outputPath(filename in s3 bucket)
+    const outputPath = req.query.name;
+    const maxWaitTime = 10000; // Maximum wait time (10 seconds)
+    const pollInterval = 1000; // Polling interval (1 second)
+    let elapsedTime = 0;
 
-    if (outputPath) {
-      console.log(outputPath);
-      res.render("download", { outputPath });
-    } else {
-      res.render("loading");
+    // Function to check if the processed image file exists in S3
+    const checkComplete = async () => {
+      try {
+        await s3
+          .getObject({
+            Bucket: bucketName,
+            Key: outputPath,
+          })
+          .promise();
+        console.log("🟢 File found in S3!");
+        return true; // Return true if file exists
+      } catch (error) {
+        // Return false if file does not exist or other errors occur
+        return false;
+      }
+    };
+
+    while (elapsedTime < maxWaitTime) {
+      const conditionMet = await checkComplete();
+      if (conditionMet) {
+        break; // Exit the loop if the condition is met
+      }
+
+      // If the condition is not met, wait for the specified interval
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      elapsedTime += pollInterval;
     }
+    res.render("download", { outputPath });
   } catch (err) {
     res.status(500).render("error", { err });
   }
 });
-
-async function pollForMessages() {
-  try {
-    const data = await receiveMessage();
-    if (data.Messages) {
-      console.log(data.Messages[0].Body);
-      const message = JSON.parse(data.Messages[0].Body);
-      const videoID = message.videoID;
-      const receiptHandle = data.Messages[0].ReceiptHandle;
-      const outputPath = await processVideo(videoID, receiptHandle); // Pass the ReceiptHandle to processVideo
-
-      return outputPath;
-    } else {
-      await new Promise((resolve) => setTimeout(resolve, 5000));
-      return await pollForMessages();
-    }
-  } catch (err) {
-    console.log(err);
-    return await pollForMessages();
-  }
-}
-
-async function receiveMessage() {
-  return new Promise((resolve, reject) => {
-    sqs.receiveMessage(receiveParams, (err, data) => {
-      if (err) {
-        console.log("Receive Error", err);
-        setTimeout(() => receiveMessage(), 5000);
-      } else {
-        resolve(data);
-      }
-    });
-  });
-}
-
-function processVideo(videoID, receiptHandle) {
-  return new Promise((resolve, reject) => {
-    // Generate pre-signed URL for download
-    try {
-      const downloadURL = generateGetUrl(videoID);
-
-      // Remove the file extension from the videoID for the output file
-      const outputFileName = videoID.split(".").slice(0, -1).join(".");
-      const outputPath = `${outputFileName}.mp4`;
-
-      const ffmpegProcess = ffmpeg()
-        .input(downloadURL) // Provide the presigned URL as the input
-        .audioCodec("copy")
-        .output(outputPath)
-        .outputFormat("mp4")
-        .on("start", function (commandLine) {
-          console.log("FFmpeg command: " + commandLine);
-        })
-        .on("progress", function (progress) {
-          console.log("Processing: " + progress.percent + "% done");
-        })
-        .on("end", function () {
-          // Upload processed video to S3
-          const params = {
-            Bucket: bucketName,
-            Key: outputPath,
-            Body: fs.createReadStream(outputPath),
-          };
-
-          s3.upload(params, function (err, data) {
-            if (err) {
-              console.log("Error uploading video: ", err);
-              res.status(500).render("error", { err });
-            } else {
-              console.log("Converted video upload successful!");
-
-              // Delete the message from the SQS queue
-              const deleteParams = {
-                QueueUrl:
-                  "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
-                ReceiptHandle: receiptHandle,
-              };
-
-              sqs.deleteMessage(deleteParams, function (err, data) {
-                if (err) {
-                  console.log("Delete Error", err);
-                } else {
-                  console.log("Message Deleted", data);
-
-                  // Remove local file
-                  fs.unlink(outputPath, (err) => {
-                    if (err) {
-                      console.error("Error removing local file:", err);
-                    } else {
-                      console.log("Local file removed successfully");
-                    }
-                  });
-                }
-              });
-              resolve(outputPath);
-            }
-          });
-        })
-        .on("error", function (err) {
-          console.error("Error converting video:", err.message);
-          console.error("ffmpeg stderr:", err.stderr);
-          reject(err);
-        });
-      ffmpegProcess.run();
-    } catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  });
-}
-
-// async function uploadFileToS3(s3, videoName, res) {
-//   const pass = new stream.PassThrough();
-//   const params = {
-//     Bucket: bucketName,
-//     Key: videoName,
-//     Body: pass,
-//     ContentType: "video/mp4",
-//   };
-
-//   s3.upload(params, function (err, data) {
-//     if (err) {
-//       console.log("Error uploading video: ", err);
-//       res.status(500).render("error", { err });
-//     } else {
-//       console.log("Converted video upload successful!");
-//     }
-//   });
-// }
 
 // Handle the download process
 router.post("/transfer", async (req, res) => {
