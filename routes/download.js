@@ -1,96 +1,71 @@
+require("dotenv").config();
 const axios = require("axios");
 var express = require("express");
+const AWS = require("aws-sdk");
 const logger = require("morgan");
 var router = express.Router();
-const stream = require("stream");
+// const stream = require("stream");
 const fs = require("fs");
 const ffmpeg = require("fluent-ffmpeg");
+const { resolve } = require("path");
 const {
   generateGetUrl,
   bucketName,
   s3,
   generatePresignedUrl,
-} = require("../s3/s3");
+} = require("../aws/s3");
+
 router.use(logger("tiny"));
 
 /* GET video page */
 // video processing page
 router.get("/", async function (req, res, next) {
-  // Parse URL query string
-  const filename = req.query.name;
+  try {
+    console.log(req.query);
+    // Wait for the SQS job to complete
+    console.log("🟢 Waiting for message from queue...");
+    // * get outputPath(filename in s3 bucket)
+    const outputPath = req.query.name;
+    const maxWaitTime = 10000; // Maximum wait time (10 seconds)
+    const pollInterval = 1000; // Polling interval (1 second)
+    let elapsedTime = 0;
 
-  // Generate pre-signed URL for download
-  const downloadURL = generateGetUrl(filename);
-  const outputPath = `${filename}.mp4`;
+    // Function to check if the processed image file exists in S3
+    const checkComplete = async () => {
+      try {
+        await s3
+          .getObject({
+            Bucket: bucketName,
+            Key: outputPath,
+          })
+          .promise();
+        console.log("🟢 File found in S3!");
+        return true; // Return true if file exists
+      } catch (error) {
+        // Return false if file does not exist or other errors occur
+        return false;
+      }
+    };
 
-  const ffmpegProcess = ffmpeg()
-    .input(downloadURL) // Provide the presigned URL as the input
-    .audioCodec("copy")
-    .output(outputPath)
-    .outputFormat("mp4")
-    .on("start", function (commandLine) {
-      console.log("FFmpeg command: " + commandLine);
-    })
-    .on("progress", function (progress) {
-      console.log("Processing: " + progress.percent + "% done");
-    })
-    .on("end", function () {
-      // Upload processed video to S3
-      const params = {
-        Bucket: bucketName,
-        Key: outputPath,
-        Body: fs.createReadStream(outputPath),
-      };
+    while (elapsedTime < maxWaitTime) {
+      const conditionMet = await checkComplete();
+      if (conditionMet) {
+        break; // Exit the loop if the condition is met
+      }
 
-      s3.upload(params, function (err, data) {
-        if (err) {
-          console.log("Error uploading video: ", err);
-          res.status(500).render("error", { err });
-        } else {
-          console.log("Converted video upload successful!");
-          fs.unlink(outputPath, (err) => {
-            if (err) {
-              console.error("Error removing local file:", err);
-            } else {
-              console.log("Local file removed successfully");
-            }
-          });
-          res.render("download", { outputPath });
-        }
-      });
-    })
-    .on("error", function (err) {
-      console.error("Error converting video:", err.message);
-      console.error("ffmpeg stderr:", err.stderr);
-      res.status(500).render("error", { err });
-    });
-
-  ffmpegProcess.run();
-});
-
-async function uploadFileToS3(s3, videoName, res) {
-  const pass = new stream.PassThrough();
-  const params = {
-    Bucket: bucketName,
-    Key: videoName,
-    Body: pass,
-    ContentType: "video/mp4",
-  };
-
-  s3.upload(params, function (err, data) {
-    if (err) {
-      console.log("Error uploading video: ", err);
-      res.status(500).render("error", { err });
-    } else {
-      console.log("Converted video upload successful!");
+      // If the condition is not met, wait for the specified interval
+      await new Promise((resolve) => setTimeout(resolve, pollInterval));
+      elapsedTime += pollInterval;
     }
-  });
-}
+    res.render("download", { outputPath });
+  } catch (err) {
+    res.status(500).render("error", { err });
+  }
+});
 
 // Handle the download process
 router.post("/transfer", async (req, res) => {
   const filename = req.body.filename;
-  console.log("filename: ", filename);
 
   // Generate pre-signed URL for download
   const downloadURL = generateGetUrl(filename);
