@@ -9,7 +9,7 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
-const queueName = "dot-queuetest";
+const queueName = "dotMedia-queue";
 
 async function sendSQSMessage(messageBodyString) {
   let queueUrl;
