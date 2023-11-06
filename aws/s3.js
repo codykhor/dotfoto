@@ -1,10 +1,6 @@
 const AWS = require("aws-sdk");
 require("dotenv").config();
 
-AWS.config.update({
-  region: "ap-southeast-2",
-});
-
 const s3 = new AWS.S3();
 
 const bucketName = "dotfoto-image-s3";
