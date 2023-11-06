@@ -23,8 +23,8 @@ function processVideo(videoID, receiptHandle) {
   const downloadURL = generateGetUrl(videoID);
 
   // Remove the file extension from the videoID for the output file
-  const outputFileName = videoID.split(".").slice(0, -1).join(".");
-  const outputPath = `${outputFileName}.mp4`;
+  // const outputFileName = videoID.split(".").slice(0, -1).join(".");
+  const outputPath = `${videoID}.mp4`;
 
   const ffmpegProcess = ffmpeg()
     .input(downloadURL) // Provide the presigned URL as the input

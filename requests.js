@@ -4,7 +4,7 @@ const fs = require("fs");
 
 const baseURL = "http://localhost:3000";
 const localFilePath = "/Users/codykhor/Downloads/example_1.mov";
-const MAX = 1;
+const MAX = 3;
 
 const runRequests = async () => {
   for (let i = 0; i < MAX; i++) {
@@ -12,7 +12,7 @@ const runRequests = async () => {
       const formData = new FormData();
       formData.append(
         "file",
-        fs.createReadStream("/Users/codykhor/Downloads/example_1.mov")
+        fs.createReadStream("/Users/codykhor/Downloads/example_small.mov")
       );
 
       const response = await axios.post(`${baseURL}/upload`, formData, {

@@ -3,12 +3,8 @@ const logger = require("morgan");
 var router = express.Router();
 const AWS = require("aws-sdk");
 const multer = require("multer");
-const {
-  generatePresignedUrl,
-  generateGetUrl,
-  bucketName,
-  s3,
-} = require("../aws/s3");
+const { generatePresignedUrl } = require("../aws/s3");
+const { sendSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
@@ -65,37 +61,37 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-async function sendSQSMessage(messageBodyString) {
-  let queueUrl;
-  try {
-    // Try to get the URL of the existing queue
-    const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
-    queueUrl = data.QueueUrl;
-    console.log("SQS queue retrieved successfully", queueName);
-  } catch (error) {
-    // create new queue if it doesn't exist
-    if (error.code === "AWS.SimpleQueueService.NonExistentQueue") {
-      const data = await sqs.createQueue({ QueueName: queueName }).promise();
-      queueUrl = data.QueueUrl;
-      console.log("SQS queue created successfully", queueName);
-    } else {
-      throw error;
-    }
-  }
+// async function sendSQSMessage(messageBodyString) {
+//   let queueUrl;
+//   try {
+//     // Try to get the URL of the existing queue
+//     const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
+//     queueUrl = data.QueueUrl;
+//     console.log("SQS queue retrieved successfully", queueName);
+//   } catch (error) {
+//     // create new queue if it doesn't exist
+//     if (error.code === "AWS.SimpleQueueService.NonExistentQueue") {
+//       const data = await sqs.createQueue({ QueueName: queueName }).promise();
+//       queueUrl = data.QueueUrl;
+//       console.log("SQS queue created successfully", queueName);
+//     } else {
+//       throw error;
+//     }
+//   }
 
-  let sendParams = {
-    MessageBody: messageBodyString,
-    QueueUrl: queueUrl,
-  };
+//   let sendParams = {
+//     MessageBody: messageBodyString,
+//     QueueUrl: queueUrl,
+//   };
 
-  sqs.sendMessage(sendParams, function (err, data) {
-    if (err) {
-      console.log("Error sending SQS message", err);
-    } else {
-      console.log("SQS message sent successfully", data.MessageId);
-    }
-  });
-}
+//   sqs.sendMessage(sendParams, function (err, data) {
+//     if (err) {
+//       console.log("Error sending SQS message", err);
+//     } else {
+//       console.log("SQS message sent successfully", data.MessageId);
+//     }
+//   });
+// }
 
 router.post("/send-sqs-message", async (req, res) => {
   try {
@@ -104,8 +100,8 @@ router.post("/send-sqs-message", async (req, res) => {
     };
 
     currentVideoID = req.body.filename;
-    console.log("🟢 currentVideoID:", currentVideoID);
-    console.log("🟢", messageBody);
+    console.log("currentVideoID:", currentVideoID);
+    console.log("messageBody", messageBody);
 
     // Convert the message body to a string
     let messageBodyString = JSON.stringify(messageBody);

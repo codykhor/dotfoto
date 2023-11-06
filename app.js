@@ -19,7 +19,7 @@ const AWS = require("aws-sdk");
 AWS.config.update({
   region: "ap-southeast-2",
 });
-
+const { bucketName, s3 } = require("./aws/s3");
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 const queueName = "dot-queue";
 
@@ -61,7 +61,7 @@ function receiveSQSMessage() {
     WaitTimeSeconds: 5,
   };
 
-  // * SQS receive message from application
+  // SQS receive message from application
   sqs.receiveMessage(receiveParams, function (err, data) {
     if (err) {
       console.log("Receive Error", err);
@@ -82,7 +82,7 @@ function receiveSQSMessage() {
   });
 }
 
-// * Keep checking if there is a new message from application
+// Checks for new messages from application
 async function pollForMessages() {
   try {
     const data = await receiveSQSMessage();
@@ -104,81 +104,219 @@ async function pollForMessages() {
   }
 }
 
-// * processVideo function in SQS Queue Worker
-function processVideo(videoID, receiptHandle) {
-  return new Promise((resolve, reject) => {
-    // Generate pre-signed URL for download
-    try {
-      const downloadURL = generateGetUrl(videoID);
+async function processVideo(videoID, receiptHandle) {
+  try {
+    const downloadURL = generateGetUrl(videoID);
+    const outputFileName = videoID.split(".").slice(0, -1).join(".");
+    const outputPath = `${outputFileName}.mp4`;
 
-      // Remove the file extension from the videoID for the output file
-      const outputFileName = videoID.split(".").slice(0, -1).join(".");
-      const outputPath = `${outputFileName}.mp4`;
+    const ffmpegProcess = ffmpeg()
+      .input(downloadURL)
+      .audioCodec("copy")
+      .output(outputPath)
+      .outputFormat("mp4");
 
-      const ffmpegProcess = ffmpeg()
-        .input(downloadURL) // Provide the presigned URL as the input
-        .audioCodec("copy")
-        .output(outputPath)
-        .outputFormat("mp4")
-        .on("start", function (commandLine) {
-          console.log("FFmpeg command: " + commandLine);
-        })
-        .on("progress", function (progress) {
-          console.log("Processing: " + progress.percent + "% done");
-        })
-        .on("end", function () {
-          // Upload processed video to S3
-          const params = {
-            Bucket: bucketName,
-            Key: outputPath,
-            Body: fs.createReadStream(outputPath),
-          };
+    console.log("FFmpeg command: " + ffmpegProcess.command);
 
-          s3.upload(params, function (err, data) {
+    // Await the completion of the FFmpeg conversion
+    await new Promise((resolve, reject) => {
+      ffmpegProcess.on("end", () => resolve());
+      ffmpegProcess.on("error", (err) => reject(err));
+      ffmpegProcess.run();
+    });
+
+    const params = {
+      Bucket: bucketName,
+      Key: outputPath,
+      Body: fs.createReadStream(outputPath),
+    };
+
+    // Await the S3 upload
+    const s3Upload = await new Promise((resolve, reject) => {
+      s3.upload(params, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+
+    const deleteParams = {
+      QueueUrl:
+        "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+      ReceiptHandle: receiptHandle,
+    };
+
+    // Await the message deletion
+    await new Promise((resolve, reject) => {
+      sqs.deleteMessage(deleteParams, (err, data) => {
+        if (err) {
+          reject(err);
+        } else {
+          resolve(data);
+        }
+      });
+    });
+
+    s3Upload
+      .then(() => {
+        return new Promise((resolve, reject) => {
+          sqs.deleteMessage(deleteParams, (err, data) => {
             if (err) {
-              console.log("Error uploading video: ", err);
-              res.status(500).render("error", { err });
+              reject(err);
             } else {
-              console.log("Converted video upload successful!");
-
-              // Delete the message from the SQS queue
-              const deleteParams = {
-                QueueUrl:
-                  "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
-                ReceiptHandle: receiptHandle,
-              };
-
-              sqs.deleteMessage(deleteParams, function (err, data) {
-                if (err) {
-                  console.log("Delete Error", err);
-                } else {
-                  console.log("Message Deleted", data);
-
-                  // Remove local file
-                  fs.unlink(outputPath, (err) => {
-                    if (err) {
-                      console.error("Error removing local file:", err);
-                    } else {
-                      console.log("Local file removed successfully");
-                    }
-                  });
-                }
-              });
-              resolve(outputPath);
+              resolve(data);
             }
           });
-        })
-        .on("error", function (err) {
-          console.error("Error converting video:", err.message);
-          console.error("ffmpeg stderr:", err.stderr);
-          reject(err);
         });
-      ffmpegProcess.run();
-    } catch (err) {
-      console.log(err);
-      reject(err);
-    }
-  });
+      })
+      .then(() => {
+        // Remove local file
+        fs.unlink(outputPath, (err) => {
+          if (err) {
+            console.error("Error removing local file:", err);
+          } else {
+            console.log("Local file removed successfully");
+          }
+        });
+      });
+
+    return outputPath; // Resolve the Promise with the output path
+  } catch (err) {
+    console.error("Error processing video:", err);
+    throw err;
+  }
 }
+
+// function processVideo(videoID, receiptHandle) {
+//   return new Promise((resolve, reject) => {
+//     // Generate pre-signed URL for download
+//     try {
+//       const downloadURL = generateGetUrl(videoID);
+
+//       // Remove the file extension from the videoID for the output file
+//       const outputFileName = videoID.split(".").slice(0, -1).join(".");
+//       const outputPath = `${outputFileName}.mp4`;
+
+//       const ffmpegProcess = ffmpeg()
+//         .input(downloadURL) // Provide the presigned URL as the input
+//         .audioCodec("copy")
+//         .output(outputPath)
+//         .outputFormat("mp4")
+//         .on("start", function (commandLine) {
+//           console.log("FFmpeg command: " + commandLine);
+//         })
+//         .on("progress", function (progress) {
+//           console.log("Processing: " + progress.percent + "% done");
+//         })
+//         .on("end", async function () {
+//           // Upload processed video to S3
+//           try {
+//             const params = {
+//               Bucket: bucketName,
+//               Key: outputPath,
+//               Body: fs.createReadStream(outputPath),
+//             };
+
+//             const s3Upload = await new Promise((resolve, reject) => {
+//               s3.upload(params, function (err, data) {
+//                 if (err) {
+//                   console.log("Error uploading video: ", err);
+//                   reject(err);
+//                 } else {
+//                   console.log("Converted video upload successful!");
+//                   resolve(data);
+//                 }
+//               });
+//             });
+
+//             const deleteParams = {
+//               QueueUrl:
+//                 "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+//               ReceiptHandle: receiptHandle,
+//             };
+
+//             sqs.deleteMessage(deleteParams, function (err, data) {
+//               if (err) {
+//                 console.log("Delete Error", err);
+//                 reject(err);
+//               } else {
+//                 console.log("Message Deleted", data);
+
+//                 // Remove local file
+//                 fs.unlink(outputPath, (err) => {
+//                   if (err) {
+//                     console.error("Error removing local file:", err);
+//                   } else {
+//                     console.log("Local file removed successfully");
+//                   }
+//                 });
+//               }
+//               resolve(outputPath);
+//             });
+//           } catch (err) {
+//             reject(err);
+//           }
+//         })
+//         .on("error", function (err) {
+//           console.error("Error converting video:", err.message);
+//           console.error("ffmpeg stderr:", err.stderr);
+//           reject(err);
+//         });
+//       ffmpegProcess.run();
+//     } catch (err) {
+//       console.log(err);
+//       reject(err);
+//     }
+//   });
+// }
+
+// s3.upload(params, function (err, data) {
+//   if (err) {
+//     console.log("Error uploading video: ", err);
+//     res.status(500).render("error", { err });
+//   } else {
+//     console.log("Converted video upload successful!");
+
+// Delete the message from the SQS queue
+// const deleteParams = {
+//   QueueUrl:
+//     "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+//   ReceiptHandle: receiptHandle,
+// };
+
+// sqs.deleteMessage(deleteParams, function (err, data) {
+//   if (err) {
+//     console.log("Delete Error", err);
+//   } else {
+//     console.log("Message Deleted", data);
+
+//     // Remove local file
+//     fs.unlink(outputPath, (err) => {
+//       if (err) {
+//         console.error("Error removing local file:", err);
+//       } else {
+//         console.log("Local file removed successfully");
+//       }
+//     });
+//   }
+// });
+//               resolve(outputPath);
+//             }
+//           });
+//         })
+//         .on("error", function (err) {
+//           console.error("Error converting video:", err.message);
+//           console.error("ffmpeg stderr:", err.stderr);
+//           reject(err);
+//         });
+//       ffmpegProcess.run();
+//     } catch (err) {
+//       console.log(err);
+//       reject(err);
+//     }
+//   });
+// }
 
 module.exports = app;
