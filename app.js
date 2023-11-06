@@ -16,11 +16,7 @@ var app = express();
 const AWS = require("aws-sdk");
 
 // * AWS Configuration
-AWS.config.update({
-  region: "ap-southeast-2",
-});
-
-const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+const sqs = new AWS.SQS({ region: "ap-southeast-2", apiVersion: "2012-11-05" });
 const queueName = "dot-queue";
 
 // view engine setup
