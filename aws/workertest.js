@@ -34,6 +34,7 @@ async function getQueueUrl() {
     }
   }
 }
+
 const receiveParams = {
   QueueUrl: queueUrl,
   MaxNumberOfMessages: 10,
