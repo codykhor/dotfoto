@@ -12,6 +12,7 @@ const {
 
 router.use(logger("tiny"));
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+const queueName = "dot-queue";
 
 // Using memoryStorage as a buffer
 const storage = multer.memoryStorage();
@@ -101,7 +102,7 @@ router.post("/send-sqs-message", async (req, res) => {
     let messageBody = {
       videoID: req.body.filename,
     };
-    // ! how can i pass this value to download.js..??
+
     currentVideoID = req.body.filename;
     console.log("🟢 currentVideoID:", currentVideoID);
     console.log("🟢", messageBody);
@@ -109,7 +110,7 @@ router.post("/send-sqs-message", async (req, res) => {
     // Convert the message body to a string
     let messageBodyString = JSON.stringify(messageBody);
 
-    // ! Send the message to the SQS queue
+    // Send the message to the SQS queue
     await sendSQSMessage(messageBodyString);
 
     return res.status(200).send("SQS message sent successfully!");

@@ -2,8 +2,9 @@ const axios = require("axios");
 const FormData = require("form-data");
 const fs = require("fs");
 
+const baseURL = "http://localhost:3000";
 const localFilePath = "/Users/codykhor/Downloads/example_1.mov";
-const MAX = 3;
+const MAX = 1;
 
 const runRequests = async () => {
   for (let i = 0; i < MAX; i++) {
@@ -14,15 +15,11 @@ const runRequests = async () => {
         fs.createReadStream("/Users/codykhor/Downloads/example_1.mov")
       );
 
-      const response = await axios.post(
-        "http://localhost:3000/upload",
-        formData,
-        {
-          headers: {
-            ...formData.getHeaders(),
-          },
-        }
-      );
+      const response = await axios.post(`${baseURL}/upload`, formData, {
+        headers: {
+          ...formData.getHeaders(),
+        },
+      });
 
       if (response.status === 200) {
         const data = response.data;
@@ -41,18 +38,9 @@ const runRequests = async () => {
           console.log("File uploaded successfully to S3!");
 
           // Send the SQS message here
-          const sqsResponse = await axios.post(
-            "http://localhost:3000/send-sqs-message",
-            {
-              filename: filename,
-              message: "Your SQS message data here", // Add the message you want to send
-            },
-            {
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const sqsResponse = await axios.post(`${baseURL}/send-sqs-message`, {
+            filename: filename,
+          });
 
           if (sqsResponse.status === 200) {
             console.log("SQS message sent successfully!");
@@ -62,7 +50,7 @@ const runRequests = async () => {
 
           // go to download page
           const downloadResponse = await axios.get(
-            `http://localhost:3000/download?name=${filename}`
+            `${baseURL}/download?name=${filename}`
           );
           if (downloadResponse.status === 200) {
             console.log("Download request successful");
