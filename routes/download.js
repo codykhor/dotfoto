@@ -44,6 +44,7 @@ router.get("/", async function (req, res, next) {
       while (elapsedTime < maxWaitTime) {
         const isFileFound = await checkComplete(outputPath);
         if (isFileFound) {
+          // Render "download" page
           res.render("download", { outputPath });
           return;
         }
@@ -58,6 +59,8 @@ router.get("/", async function (req, res, next) {
       res.status(500).render("error", { err });
     }
   }
+  // call 'waitForS3File' function
+  waitForS3File();
 });
 
 // Create pre-signed GET URL to download video
