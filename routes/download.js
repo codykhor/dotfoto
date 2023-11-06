@@ -14,7 +14,7 @@ const {
 router.use(logger("tiny"));
 
 /* GET video page */
-// video processing page
+
 router.get("/", async function (req, res, next) {
   // Parse URL query string
   const filename = req.query.name;
@@ -39,6 +39,8 @@ router.post("/transfer", async (req, res) => {
     return res.status(200).json({ downloadURL });
   }
 });
+
+// Check if file exists in S3
 router.get("/check-file", async (req, res) => {
   const filename = req.query.name;
   const params = {
