@@ -9,11 +9,29 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+const queueName = "dot-queue";
+async function sendSQSMessage(messageBodyString) {
+  let queueUrl;
 
-function sendSQSMessage(messageBodyString) {
+  try {
+    // Try to get the URL of the existing queue
+    const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
+    queueUrl = data.QueueUrl;
+    console.log("SQS queue retrieved successfully", queueName);
+  } catch (error) {
+    // create new queue if it doesn't exist
+    if (error.code === "AWS.SimpleQueueService.NonExistentQueue") {
+      const data = await sqs.createQueue({ QueueName: queueName }).promise();
+      queueUrl = data.QueueUrl;
+      console.log("SQS queue created successfully", queueName);
+    } else {
+      throw error;
+    }
+  }
+
   let sendParams = {
     MessageBody: messageBodyString,
-    QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+    QueueUrl: queueUrl,
   };
 
   sqs.sendMessage(sendParams, function (err, data) {
