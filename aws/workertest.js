@@ -13,6 +13,8 @@ AWS.config.update({
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
+const queueName = "dot-queue";
+
 const receiveParams = {
   QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
   MaxNumberOfMessages: 10,
