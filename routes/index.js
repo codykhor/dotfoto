@@ -9,9 +9,9 @@ const {
   bucketName,
   s3,
 } = require("../aws/s3");
-const { sendSQSMessage, receiveSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
+const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
 // Using memoryStorage as a buffer
 const storage = multer.memoryStorage();
@@ -27,6 +27,8 @@ const allowedMimeTypes = [
   "video/3gpp",
   "video/quicktime",
 ];
+
+// * File configuration
 const fileFilter = (req, file, cb) => {
   if (allowedMimeTypes.includes(file.mimetype)) {
     cb(null, true);
@@ -35,6 +37,7 @@ const fileFilter = (req, file, cb) => {
   }
 };
 
+// * Multer configuration
 const upload = multer({ storage: storage, fileFilter: fileFilter });
 
 /* GET home page. */
@@ -61,16 +64,52 @@ router.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+async function sendSQSMessage(messageBodyString) {
+  let queueUrl;
+  try {
+    // Try to get the URL of the existing queue
+    const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
+    queueUrl = data.QueueUrl;
+    console.log("SQS queue retrieved successfully", queueName);
+  } catch (error) {
+    // create new queue if it doesn't exist
+    if (error.code === "AWS.SimpleQueueService.NonExistentQueue") {
+      const data = await sqs.createQueue({ QueueName: queueName }).promise();
+      queueUrl = data.QueueUrl;
+      console.log("SQS queue created successfully", queueName);
+    } else {
+      throw error;
+    }
+  }
+
+  let sendParams = {
+    MessageBody: messageBodyString,
+    QueueUrl: queueUrl,
+  };
+
+  sqs.sendMessage(sendParams, function (err, data) {
+    if (err) {
+      console.log("Error sending SQS message", err);
+    } else {
+      console.log("SQS message sent successfully", data.MessageId);
+    }
+  });
+}
+
 router.post("/send-sqs-message", async (req, res) => {
   try {
     let messageBody = {
       videoID: req.body.filename,
     };
+    // ! how can i pass this value to download.js..??
+    currentVideoID = req.body.filename;
+    console.log("🟢 currentVideoID:", currentVideoID);
+    console.log("🟢", messageBody);
 
     // Convert the message body to a string
     let messageBodyString = JSON.stringify(messageBody);
 
-    // Send the message to the SQS queue
+    // ! Send the message to the SQS queue
     await sendSQSMessage(messageBodyString);
 
     return res.status(200).send("SQS message sent successfully!");
