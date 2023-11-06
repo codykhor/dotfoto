@@ -13,7 +13,7 @@ AWS.config.update({
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
-const queueName = "dot-queuetest";
+const queueName = "dotMedia-queue";
 
 let queueUrl;
 
@@ -124,6 +124,7 @@ function processVideo(videoID, receiptHandle) {
 }
 
 function pollForMessages() {
+  console.log("Polling for messages...");
   const receiveParams = {
     QueueUrl: queueUrl,
     MaxNumberOfMessages: 10,
