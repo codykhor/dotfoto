@@ -9,7 +9,7 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
-const queueName = "dot-queue";
+const queueName = "dot-queuetest";
 
 async function sendSQSMessage(messageBodyString) {
   let queueUrl;
@@ -43,35 +43,7 @@ async function sendSQSMessage(messageBodyString) {
     }
   });
 }
-function receiveSQSMessage() {
-  let receiveParams = {
-    QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
-    MaxNumberOfMessages: 10,
-    VisibilityTimeout: 60,
-    WaitTimeSeconds: 5,
-  };
-
-  sqs.receiveMessage(receiveParams, function (err, data) {
-    if (err) {
-      console.log("Receive Error", err);
-    } else if (data.Messages) {
-      let deleteParams = {
-        QueueUrl:
-          "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
-        ReceiptHandle: data.Messages[0].ReceiptHandle,
-      };
-      sqs.deleteMessage(deleteParams, function (err, data) {
-        if (err) {
-          console.log("Delete Error", err);
-        } else {
-          console.log("Message Deleted", data);
-        }
-      });
-    }
-  });
-}
 
 module.exports = {
   sendSQSMessage,
-  receiveSQSMessage,
 };

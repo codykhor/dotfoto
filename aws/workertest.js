@@ -13,8 +13,29 @@ AWS.config.update({
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
+const queueName = "dot-queuetest";
+
+let queueUrl;
+
+async function getQueueUrl() {
+  try {
+    const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
+    queueUrl = data.QueueUrl;
+    console.log("SQS queue retrieved successfully", queueName);
+  } catch (error) {
+    if (error.code === "AWS.SimpleQueueService.NonExistentQueue") {
+      console.log("Queue does not exist. Creating a new one...");
+      const data = await sqs.createQueue({ QueueName: queueName }).promise();
+      queueUrl = data.QueueUrl;
+      console.log("SQS queue created successfully", queueName);
+    } else {
+      console.log("Error getting SQS queue URL", error);
+      throw error;
+    }
+  }
+}
 const receiveParams = {
-  QueueUrl: "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+  QueueUrl: queueUrl,
   MaxNumberOfMessages: 10,
   VisibilityTimeout: 60,
   WaitTimeSeconds: 20, // Enable long polling
@@ -41,8 +62,7 @@ function processVideo(videoID, receiptHandle) {
 
       sqs.changeMessageVisibility(
         {
-          QueueUrl:
-            "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+          QueueUrl: queueUrl,
           ReceiptHandle: receiptHandle,
           VisibilityTimeout: visibilityTimeout,
         },
@@ -79,8 +99,7 @@ function processVideo(videoID, receiptHandle) {
 
           // Delete the message from the SQS queue
           const deleteParams = {
-            QueueUrl:
-              "https://sqs.ap-southeast-2.amazonaws.com/901444280953/dot-queue",
+            QueueUrl: queueUrl,
             ReceiptHandle: receiptHandle,
           };
 
@@ -111,6 +130,13 @@ function processVideo(videoID, receiptHandle) {
 }
 
 function pollForMessages() {
+  const receiveParams = {
+    QueueUrl: queueUrl,
+    MaxNumberOfMessages: 10,
+    VisibilityTimeout: 60,
+    WaitTimeSeconds: 20, // Enable long polling
+  };
+
   sqs.receiveMessage(receiveParams, function (err, data) {
     if (err) {
       console.log("Receive Error", err);
@@ -126,4 +152,9 @@ function pollForMessages() {
 }
 
 // Start polling for messages
-pollForMessages();
+async function init() {
+  await getQueueUrl();
+  pollForMessages();
+}
+
+init();
