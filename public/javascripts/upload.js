@@ -31,18 +31,16 @@ document
           "Content-Type": file.type,
         },
       });
-
-      if (uploadResponse.status === 200) {
+      // File upload is successful, now send the SQS message
+      const sqsResponse = await fetch("/send-sqs-message", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ filename: filename }),
+      });
+      if (uploadResponse.status === 200 && sqsResponse.status === 200) {
         console.log("File uploaded successfully!");
-        // File upload is successful, now send the SQS message
-        const sqsResponse = await fetch("/send-sqs-message", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ filename: filename }),
-        });
-
         window.location.href = `/download?name=${filename}`;
       } else {
         console.log("Error uploading file.");
