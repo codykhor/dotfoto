@@ -35,13 +35,6 @@ async function getQueueUrl() {
   }
 }
 
-const receiveParams = {
-  QueueUrl: queueUrl,
-  MaxNumberOfMessages: 10,
-  VisibilityTimeout: 60,
-  WaitTimeSeconds: 20, // Enable long polling
-};
-
 // video processing
 function processVideo(videoID, receiptHandle) {
   // Generate pre-signed URL for download
