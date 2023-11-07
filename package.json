@@ -2,10 +2,10 @@
   "name": "dotfoto",
   "version": "0.0.0",
   "private": true,
-    "scripts": {
-    "dotfoto": "nodemon -L ./bin/www",
+  "scripts": {
+    "dotmedia": "nodemon -L ./bin/www",
     "aws-worker": "nodemon -L ./aws/awsWorker.js",
-    "start": "concurrently \"npm run dotfoto\" \"npm run aws-worker\""
+    "start": "concurrently \"npm run dotmedia\" \"npm run aws-worker\""
   },
   "dependencies": {
     "aws-sdk": "^2.1477.0",
