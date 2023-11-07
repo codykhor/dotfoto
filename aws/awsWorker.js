@@ -13,7 +13,7 @@ AWS.config.update({
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
 
-const queueName = "dotMedia-Queue-1";
+const queueName = "DotMediaQueue";
 
 let queueUrl;
 
