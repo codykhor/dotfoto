@@ -13,4 +13,4 @@ const processImage = async function (image, width, height, dpi) {
   }
 };
 
-module.exports = processImage;
+module.exports = { processImage };

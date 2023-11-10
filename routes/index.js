@@ -4,7 +4,7 @@ var router = express.Router();
 const AWS = require("aws-sdk");
 const multer = require("multer");
 const { generatePresignedUrl } = require("../aws/s3");
-const sendSQSMessage = require("../aws/sqs");
+const { sendSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
 
@@ -55,8 +55,6 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     return res.status(200).json({ presignedURL, newFileName });
   }
 });
-
-// Handle sending SQS message */
 router.post("/send-sqs-message", async (req, res) => {
   try {
     let messageBody = {

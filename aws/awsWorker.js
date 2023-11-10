@@ -4,7 +4,6 @@ const { generateGetUrl, bucketName, s3 } = require("./s3");
 const fs = require("fs");
 require("dotenv").config();
 
-// AWS configuration
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -13,7 +12,9 @@ AWS.config.update({
 });
 
 const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
-const queueName = "dotMedia-queue";
+
+const queueName = "DotMediaQueue";
+
 let queueUrl;
 
 async function getQueueUrl() {
@@ -88,7 +89,6 @@ function processVideo(videoID, receiptHandle) {
         s3.upload(params, function (s3Err, data) {
           if (s3Err) throw s3Err;
           console.log(`File uploaded successfully at ${data.Location}`);
-          console.log("im here!");
 
           // Delete the message from the SQS queue
           const deleteParams = {
