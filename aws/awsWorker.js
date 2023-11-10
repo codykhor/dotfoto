@@ -1,9 +1,10 @@
 const AWS = require("aws-sdk");
 const ffmpeg = require("fluent-ffmpeg");
-const { generateGetUrl, bucketName, s3 } = require("./s3");
+const { generateGetUrl, bucketName, s3 } = require("./s3"); // Import necessary S3 related functions and variables
 const fs = require("fs");
 require("dotenv").config();
 
+// Configure AWS with your credentials and region
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -11,12 +12,11 @@ AWS.config.update({
   region: "ap-southeast-2",
 });
 
-const sqs = new AWS.SQS({ apiVersion: "2012-11-05" });
+const sqs = new AWS.SQS({ apiVersion: "2012-11-05" }); // Initialize SQS with the specified API version
+const queueName = "DotMediaQueue"; // Name of your SQS queue
+let queueUrl; // This will store the URL of the SQS queue
 
-const queueName = "DotMediaQueue";
-
-let queueUrl;
-
+// Retrieves the SQS queue URL or creates a new queue if it doesn't exist
 async function getQueueUrl() {
   try {
     const data = await sqs.getQueueUrl({ QueueName: queueName }).promise();
@@ -35,25 +35,24 @@ async function getQueueUrl() {
   }
 }
 
-// video processing
+// Processes the video by converting it and uploading the result to S3
 function processVideo(videoID, receiptHandle) {
-  // Generate pre-signed URL for download
-  const downloadURL = generateGetUrl(videoID);
+  const downloadURL = generateGetUrl(videoID); // Generate a presigned URL for downloading the video
 
-  // Remove the file extension from the videoID for the output file
-  const outputFileName = videoID.split(".").slice(0, -1).join(".");
-  const outputPath = `${outputFileName}.mp4`;
+  const outputFileName = videoID.split(".").slice(0, -1).join("."); // Remove the file extension from the videoID
+  const outputPath = `${outputFileName}.mp4`; // Set the output file path
 
+  // Set up the ffmpeg process for video conversion
   const ffmpegProcess = ffmpeg()
-    .input(downloadURL) // Provide the presigned URL as the input
-    .audioCodec("copy")
-    .output(outputPath)
-    .outputFormat("mp4")
+    .input(downloadURL) // Input the presigned URL
+    .audioCodec("copy") // Copy the audio codec
+    .output(outputPath) // Set the output file path
+    .outputFormat("mp4") // Set the output format to mp4
     .on("start", function (commandLine) {
       console.log("Starting conversion...");
       console.log("FFmpeg command: " + commandLine);
-      const visibilityTimeout = 60; // Extend the visibility timeout
-
+      // Extend the visibility timeout of the message in the SQS queue
+      const visibilityTimeout = 60;
       sqs.changeMessageVisibility(
         {
           QueueUrl: queueUrl,
@@ -75,22 +74,23 @@ function processVideo(videoID, receiptHandle) {
       console.log("Processing: " + progress.percent + "% done");
     })
     .on("end", function () {
-      console.log("conversion completed.");
+      console.log("Conversion completed.");
+      // Read the converted file
       fs.readFile(outputPath, (err, data) => {
         if (err) throw err;
 
         const params = {
-          Bucket: bucketName,
-          Key: outputPath,
-          Body: data,
+          Bucket: bucketName, // Specify the S3 bucket
+          Key: outputPath, // Specify the file key in the bucket
+          Body: data, // Provide the file data
         };
 
-        // Upload the file to S3
+        // Upload the converted file to S3
         s3.upload(params, function (s3Err, data) {
           if (s3Err) throw s3Err;
           console.log(`File uploaded successfully at ${data.Location}`);
 
-          // Delete the message from the SQS queue
+          // Delete the processed message from the SQS queue
           const deleteParams = {
             QueueUrl: queueUrl,
             ReceiptHandle: receiptHandle,
@@ -101,7 +101,8 @@ function processVideo(videoID, receiptHandle) {
               console.log("Delete Error", err);
             } else {
               console.log("Message Deleted", data);
-              pollForMessages();
+              pollForMessages(); // Continue polling for new messages
+              // Remove the local file
               fs.unlink(outputPath, (err) => {
                 if (err) {
                   console.error("Error removing local file:", err);
@@ -118,18 +119,19 @@ function processVideo(videoID, receiptHandle) {
       console.error("Error converting video:", err.message);
       console.error("ffmpeg stderr:", err.stderr);
       console.error("Conversion failed at an earlier stage.");
-      pollForMessages();
+      pollForMessages(); // Continue polling for new messages even after an error
     })
     .run(); // Run the FFmpeg command
 }
 
+// Polls the SQS queue for new messages
 function pollForMessages() {
   console.log("Polling for messages...");
   const receiveParams = {
     QueueUrl: queueUrl,
-    MaxNumberOfMessages: 10,
-    VisibilityTimeout: 60,
-    WaitTimeSeconds: 20, // Enable long polling
+    MaxNumberOfMessages: 10, // Maximum number of messages to retrieve
+    VisibilityTimeout: 60, // Visibility timeout for the message
+    WaitTimeSeconds: 20, // Enable long polling for efficiency
   };
 
   sqs.receiveMessage(receiveParams, function (err, data) {
@@ -137,19 +139,18 @@ function pollForMessages() {
       console.log("Receive Error", err);
     } else if (data.Messages) {
       console.log(data.Messages[0].Body);
-      const message = JSON.parse(data.Messages[0].Body);
-      processVideo(message.videoID, data.Messages[0].ReceiptHandle); // Pass the ReceiptHandle to processVideo
+      const message = JSON.parse(data.Messages[0].Body); // Parse the message body
+      processVideo(message.videoID, data.Messages[0].ReceiptHandle); // Process the video using the message details
     } else {
-      // Only poll for new messages if there are no messages currently being processed
-      pollForMessages();
+      pollForMessages(); // Continue polling if no messages are received
     }
   });
 }
 
-// Start polling for messages
+// Initialize the process by retrieving the SQS queue URL and starting to poll for messages
 async function init() {
   await getQueueUrl();
   pollForMessages();
 }
 
-init();
+init(); // Start the application
