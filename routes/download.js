@@ -16,7 +16,6 @@ const { generateGetUrl, bucketName, s3 } = require("../aws/s3");
 router.use(logger("tiny"));
 
 /* GET video page */
-
 router.get("/", async function (req, res, next) {
   // Parse URL query string
   const filename = req.query.name;

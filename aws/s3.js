@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 require("dotenv").config();
 
+// AWS configuration
 AWS.config.update({
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
@@ -32,6 +33,7 @@ const createS3bucket = () => {
     }
   });
 };
+
 // Function to add CORS configuration to the S3 bucket
 const addCorsConfiguration = async () => {
   const client = new S3Client({ region: "ap-southeast-2" });
@@ -43,10 +45,10 @@ const addCorsConfiguration = async () => {
         {
           // Allow all headers to be sent to this bucket.
           AllowedHeaders: ["*"],
-          // Allow only GET and PUT methods to be sent to this bucket.
+          // Allow methods to be sent to this bucket.
           AllowedMethods: ["GET", "POST", "PUT", "HEAD"],
           // Allow only requests from the specified origin(s).
-          AllowedOrigins: ["*"], // Update with your allowed origins
+          AllowedOrigins: ["*"],
           // Allow the entity tag (ETag) header to be returned in the response
         },
       ],
@@ -101,6 +103,4 @@ const generateGetUrl = (filename) => {
 module.exports = {
   generatePresignedUrl,
   generateGetUrl,
-  bucketName,
-  s3,
 };
