@@ -66,7 +66,7 @@ createS3bucket();
 
 // Create pre-signed PUT URL to upload video
 const generatePresignedUrl = (originalname, mimetype) => {
-  const uniqueFileName = Date.now() + originalname;
+  const uniqueFileName = Date.now() + "_" + originalname;
   const params = {
     Bucket: bucketName,
     Key: uniqueFileName,

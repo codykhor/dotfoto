@@ -1,46 +1,40 @@
-const axios = require("axios");
-var express = require("express");
+const express = require("express");
 const logger = require("morgan");
+const { generateGetUrl, bucketName, s3 } = require("../aws/s3");
+
 var router = express.Router();
-const stream = require("stream");
-const fs = require("fs");
-const ffmpeg = require("fluent-ffmpeg");
-const {
-  generateGetUrl,
-  bucketName,
-  s3,
-  generatePresignedUrl,
-} = require("../aws/s3");
 router.use(logger("tiny"));
 
-/* GET video page */
-
+// GET route for the video page
 router.get("/", async function (req, res, next) {
-  // Parse URL query string
+  // Extract the filename from the query string
   const filename = req.query.name;
   const outputFileName = filename.split(".").slice(0, -1).join(".");
-  console.log(outputFileName);
   const outputPath = `${outputFileName}.mp4`;
-  console.log(outputPath);
+
+  // Render the download page with the output path
   res.render("download", { outputPath });
 });
 
-// Handle the download process
+// POST route to handle the download process
 router.post("/transfer", async (req, res) => {
   const filename = req.body.filename;
   const outputFileName = filename.split(".").slice(0, -1).join(".") + ".mp4";
 
-  // Generate pre-signed URL for download
+  // Generate a pre-signed URL for the download
   const downloadURL = generateGetUrl(outputFileName);
 
+  // Check if the download URL was generated successfully
   if (!downloadURL) {
-    return res.status(500).render("error", { err });
+    return res
+      .status(500)
+      .render("error", { error: "Failed to generate download URL" });
   } else {
     return res.status(200).json({ downloadURL });
   }
 });
 
-// Check if file exists in S3
+// GET route to check if the file exists in S3
 router.get("/check-file", async (req, res) => {
   const filename = req.query.name;
   const params = {
@@ -48,16 +42,12 @@ router.get("/check-file", async (req, res) => {
     Key: filename,
   };
 
-  console.log("Checking file:", filename);
-  console.log("Bucket name:", bucketName);
-
   try {
+    // Check if the file exists in S3
     await s3.headObject(params).promise();
-    console.log("File Found in S3");
     res.status(200).send();
   } catch (err) {
-    console.error("File not Found ERROR:", err);
-    console.error("Error code:", err.code);
+    console.error("File not Found ERROR:", err.message);
     res.status(404).send();
   }
 });
