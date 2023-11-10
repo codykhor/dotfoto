@@ -3,8 +3,8 @@ const logger = require("morgan");
 var router = express.Router();
 const AWS = require("aws-sdk");
 const multer = require("multer");
-const { generatePresignedUrl } = require("../aws/s3");
-const { sendSQSMessage } = require("../aws/sqs");
+const generatePresignedUrl = require("../aws/s3");
+const sendSQSMessage = require("../aws/sqs");
 
 router.use(logger("tiny"));
 

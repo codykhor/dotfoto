@@ -1,6 +1,6 @@
 {
-  "name": "dotfoto",
-  "version": "0.0.0",
+  "name": "dot-media",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "dotmedia": "nodemon -L ./bin/www",

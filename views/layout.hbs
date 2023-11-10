@@ -1,8 +1,13 @@
 <html>
   <head>
     <title>DotMedia</title>
+
+    {{! CSS part }}
     <link rel="stylesheet" href="/stylesheets/style.css" />
+
+    {{! Fav and Logo part }}
     <link rel="icon" type="image/png" href="/images/dotmediaLogo.png" />
+
     {{! icon for iphone home screen 114x114, 72x72}}
     <link
       rel="apple-touch-icon-precomposed"
@@ -15,6 +20,7 @@
       href="/images/dotmediaLogo.png"
     />
     <link rel="apple-touch-icon-precomposed" href="/images/dotmediaLogo.png" />
+
     {{! Fonts }}
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -23,6 +29,8 @@
       rel="stylesheet"
     />
   </head>
+
+  {{! Body part }}
   <body>
     <header>
       <div class="logo">
@@ -34,6 +42,8 @@
       <nav>
       </nav>
     </header>
+    {{! header ends }}
+
     {{{body}}}
   </body>
 </html>

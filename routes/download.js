@@ -1,16 +1,18 @@
-const axios = require("axios");
+// const axios = require("axios");
 var express = require("express");
 const logger = require("morgan");
 var router = express.Router();
-const stream = require("stream");
-const fs = require("fs");
-const ffmpeg = require("fluent-ffmpeg");
-const {
-  generateGetUrl,
-  bucketName,
-  s3,
-  generatePresignedUrl,
-} = require("../aws/s3");
+// const stream = require("stream");
+// const fs = require("fs");
+// const ffmpeg = require("fluent-ffmpeg");
+// const {
+//   generateGetUrl,
+//   bucketName,
+//   s3,
+//   generatePresignedUrl,
+// } = require("../aws/s3");
+const { generateGetUrl, bucketName, s3 } = require("../aws/s3");
+
 router.use(logger("tiny"));
 
 /* GET video page */
