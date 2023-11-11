@@ -12,7 +12,7 @@ document
     }
 
     // Show loading messages
-    loadingElement.style.display = "block";
+    loadingElement.style.display = "flex";
 
     try {
       await pollForFileAvailability(filename);
