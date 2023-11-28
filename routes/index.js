@@ -3,12 +3,8 @@ const logger = require("morgan");
 var router = express.Router();
 const AWS = require("aws-sdk");
 const multer = require("multer");
-const {
-  generatePresignedUrl,
-  generateGetUrl,
-  bucketName,
-  s3,
-} = require("../s3/s3");
+const { generatePresignedUrl } = require("../aws/s3");
+const { sendSQSMessage } = require("../aws/sqs");
 
 router.use(logger("tiny"));
 
@@ -57,6 +53,26 @@ router.post("/upload", upload.single("file"), async (req, res) => {
     return res.status(500).render("error", { err });
   } else {
     return res.status(200).json({ presignedURL, newFileName });
+  }
+});
+router.post("/send-sqs-message", async (req, res) => {
+  try {
+    let messageBody = {
+      videoID: req.body.filename,
+    };
+
+    // Convert the message body to a string
+    let messageBodyString = JSON.stringify(messageBody);
+
+    // Send the message to the SQS queue
+    await sendSQSMessage(messageBodyString);
+
+    return res.status(200).send("SQS message sent successfully!");
+  } catch (error) {
+    console.error(error);
+    return res
+      .status(500)
+      .send("An error occurred while sending the SQS message.");
   }
 });
 

@@ -18,7 +18,7 @@ p {
 }
 
 .logo img {
-  width: 2%;
+  width: 2rem;
   height: auto;
   display: inline-block;
   vertical-align: middle;
