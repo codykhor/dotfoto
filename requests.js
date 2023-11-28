@@ -4,19 +4,19 @@ const fs = require("fs");
 
 const baseURL =
   "http://dotmedia-lb-app-1231012212.ap-southeast-2.elb.amazonaws.com";
-const localFilePath = "/Users/arinning/Desktop/ASG1.mov";
-const MAX = 100;
+const localFilePath = "/Users/codykhor/Downloads/exp.mov";
+const MAX = 10;
 
 const runRequests = async () => {
   const promises = [];
+  const delay = 2000;
+
   for (let i = 0; i < MAX; i++) {
+    start = performance.now();
     const promise = (async () => {
       try {
         const formData = new FormData();
-        formData.append(
-          "file",
-          fs.createReadStream("/Users/arinning/Desktop/ASG1.mov")
-        );
+        formData.append("file", fs.createReadStream(`${localFilePath}`));
 
         const response = await axios.post(`${baseURL}/upload`, formData, {
           headers: {
@@ -54,15 +54,20 @@ const runRequests = async () => {
               console.log("Error sending SQS message.");
             }
 
-            // // go to download page
-            // const downloadResponse = await axios.get(
-            //   `${baseURL}/download?name=${filename}`
-            // );
-            // if (downloadResponse.status === 200) {
-            //   console.log("Download request successful");
-            // } else {
-            //   console.log("Error in download request");
-            // }
+            // go to download page
+            const downloadResponse = await axios.get(
+              `${baseURL}/download?name=${filename}`
+            );
+            if (downloadResponse.status === 200) {
+              console.log("Download request successful");
+            } else {
+              console.log("Error in download request");
+            }
+
+            // log time elapsed
+            end = performance.now();
+            elapsed = (end - start) / 1000; //convert to seconds
+            console.log("Elapsed time in seconds: ", elapsed);
           } else {
             console.log("Error uploading file.");
           }
@@ -81,6 +86,9 @@ const runRequests = async () => {
       }
       promises.push(promise);
     })();
+    if (i < MAX - 1) {
+      await new Promise((resolve) => setTimeout(resolve, delay));
+    }
   }
   await Promise.all(promises);
 };
