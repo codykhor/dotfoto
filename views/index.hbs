@@ -1,16 +1,24 @@
 <div class="headline">
-    <p>Resize and convert images for free.</p>
+    <h1>Video Converter</h1>
+    <p>Convert your videos to MP4 with ease</p>
 </div>
 
-{{!-- Image upload --}}
+{{!-- Video upload --}}
 <div class="choose-container">
-    <form action="/action_page.php">{{!-- replace it with the actual URL of the server-side script that will process the uploaded file. --}}
-    <div>
-        <input type="file" id="myFile" name="filename" accept=".jpg, .jpeg, .png" class="choose-button">
-    </div>
-        <p>Only JPG, JPEG and PNG.</p>
-    <div class="upload-container">
-        <input type="submit" value="Upload" class="upload-button">
-    </div>
+    <form id="upload-form" method="post" enctype="multipart/form-data">
+        <div>
+            <input type="file" id="myFile" name="file" accept=".avi, .mkv, .flv, .wmv, .webm, .mpeg, .3gp, .mov" class="choose-button">
+        </div>
+            {{!-- <p>Only JPG, JPEG and PNG.</p> --}}
+        <br>
+        
+        <div class="upload-container">
+                <button type="submit" value="Process" class="process-button" id="process-button" disabled>Process</button>
+        </div>
+
+        
     </form>
 </div>
+
+<script src="/javascripts/upload.js"></script>
+

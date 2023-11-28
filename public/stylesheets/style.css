@@ -17,23 +17,43 @@ p {
   padding-top: 2rem;
 }
 
+.logo img {
+  width: 2%;
+  height: auto;
+  display: inline-block;
+  vertical-align: middle;
+}
+
 .logo p {
-  position: absolute;
   background: linear-gradient(90deg, #023e8a 0%, #0077b6 40%, #0096c7 80%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.logo a {
+  text-decoration: none;
 }
 
 .headline {
-  padding: 4rem;
+  padding: 4rem 0 3rem 0;
+}
+
+h1 {
+  margin: 0;
+  font-size: 3.5rem;
+  font-weight: 700;
+  text-align: center;
+  color: #1d3557;
+  padding-bottom: 0.3rem;
 }
 
 .headline p {
-  font-size: 2.5rem;
-  font-weight: 600;
   text-align: center;
-  color: #1d3557;
+  font-size: 1.3rem;
+  font-weight: 300;
 }
 
 .choose-container {
@@ -55,12 +75,37 @@ p {
   font-style: italic;
 }
 
-.upload-container {
+h2 {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 2rem;
+  font-weight: 500;
   text-align: center;
-  padding-top: 1rem;
 }
 
-.upload-button {
+h3 {
+  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 400;
+}
+
+.upload-container {
+  text-align: center;
+}
+
+.process-button:disabled {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 40px;
+  background-color: grey;
+  color: white;
+  padding: 13px 30px;
+  cursor: not-allowed;
+}
+
+.process-button {
   font-family: 'Poppins', sans-serif;
   font-size: 1.2rem;
   border: none;
@@ -71,4 +116,35 @@ p {
   cursor: pointer;
 }
 
+.process-button:hover {
+  background-color: #023047;
+}
 
+.download-container {
+  text-align: center;
+}
+
+.download-button {
+  font-family: 'Poppins', sans-serif;
+  font-size: 1.2rem;
+  border: none;
+  border-radius: 40px;
+  background-color: #31D2D5;
+  color: white;
+  padding: 13px 30px;
+  cursor: pointer;
+}
+
+.download-button:hover {
+  background-color: #023047;
+}
+
+.error {
+  padding: 10rem 0 3rem 0;
+}
+
+.error p {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 300;
+}
